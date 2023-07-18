@@ -1,13 +1,24 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const { PORT = 3000 } = process.env;
+const router = require('./routes/index');
 
-mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
-  useNewUrlParser: true,
-  useUnifiedTopology: false,
-});
+mongoose
+  .connect('mongodb://127.0.0.1:27017/mestodb', {
+    useNewUrlParser: true,
+    useUnifiedTopology: false,
+  })
+  .then(() => {
+    console.log('BD is working');
+  })
+  .catch(() => {
+    console.log('BD is not working');
+  });
 
 const app = express();
+app.use(express.json());
+
+app.use(router);
 
 app.listen(PORT, () => {
   // eslint-disable-next-line
