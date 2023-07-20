@@ -18,14 +18,14 @@ mongoose
 const app = express();
 app.use(express.json());
 
-app.use(router);
-
-router.use((req, res, next) => {
+app.use((req, res, next) => {
   req.user = {
     _id: '64b56f47d085893b755e4354', // вставьте сюда _id созданного в предыдущем пункте пользователя
   };
   next();
 });
+
+app.use(router);
 
 app.listen(PORT, () => {
   // eslint-disable-next-line
