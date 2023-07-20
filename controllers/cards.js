@@ -1,39 +1,59 @@
 const Card = require('../models/card');
+const NotFoundError = require('../errors/NotFoundError');
+const httpConstants = require('http2').constants;
+const mongoose = require('mongoose');
+const { ValidationError, CastError } = mongoose.Error;
 
 const createCard = (req, res) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({ name, link, owner })
-    .then((card) => res.send({ card }))
+    .then((card) =>
+      res.status(httpConstants.HTTP_STATUS_CREATED).send({ card })
+    )
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: err.message });
+      if (err instanceof ValidationError) {
+        return res
+          .status(httpConstants.HTTP_STATUS_BAD_REQUEST)
+          .send({ message: err.message });
       } else {
-        res.status(500).send({ message: err.message });
+        res
+          .status(httpConstants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+          .send({ message: 'Произошла ошибка на сервере' });
       }
     });
 };
 
 const getCards = (req, res) => {
   Card.find({})
-    .then((cardList) => res.send(cardList))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .then((cardList) => res.status(httpConstants.HTTP_STATUS_OK).send(cardList))
+    .catch((err) =>
+      res
+        .status(httpConstants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+        .send({ message: 'Произошла ошибка на сервере' })
+    );
 };
 
 const deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
-    .orFail(new Error('NotFound'))
+    .orFail(new NotFoundError('NotFound'))
     .then((card) => {
-      res.status(200).send(card);
+      res.status(httpConstants.HTTP_STATUS_OK).send(card);
     })
     .catch((err) => {
       if (err.message === 'NotFound') {
-        return res.status(404).send({ message: err.message });
+        return res
+          .status(httpConstants.HTTP_STATUS_NOT_FOUND)
+          .send({ message: err.message });
       }
-      if (err.name === 'CastError') {
-        return res.status(400).send({ message: err.message });
+      if (err instanceof CastError) {
+        return res
+          .status(httpConstants.HTTP_STATUS_BAD_REQUEST)
+          .send({ message: err.message });
       } else {
-        res.status(500).send({ message: err.message });
+        res
+          .status(httpConstants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+          .send({ message: 'Произошла ошибка на сервере' });
       }
     });
 };
@@ -44,18 +64,24 @@ const likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true }
   )
-    .orFail(new Error('NotFound'))
+    .orFail(new NotFoundError('NotFound'))
     .then((card) => {
-      res.status(200).send(card);
+      res.status(httpConstants.HTTP_STATUS_OK).send(card);
     })
     .catch((err) => {
       if (err.message === 'NotFound') {
-        return res.status(404).send({ message: err.message });
+        return res
+          .status(httpConstants.HTTP_STATUS_NOT_FOUND)
+          .send({ message: err.message });
       }
-      if (err.name === 'CastError') {
-        return res.status(400).send({ message: err.message });
+      if (err instanceof CastError) {
+        return res
+          .status(httpConstants.HTTP_STATUS_BAD_REQUEST)
+          .send({ message: err.message });
       } else {
-        res.status(500).send({ message: err.message });
+        res
+          .status(httpConstants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+          .send({ message: 'Произошла ошибка на сервере' });
       }
     });
 };
@@ -68,16 +94,22 @@ const dislikeCard = (req, res) => {
   )
     .orFail(new Error('NotFound'))
     .then((card) => {
-      res.status(200).send(card);
+      res.status(httpConstants.HTTP_STATUS_OK).send(card);
     })
     .catch((err) => {
       if (err.message === 'NotFound') {
-        return res.status(404).send({ message: err.message });
+        return res
+          .status(httpConstants.HTTP_STATUS_NOT_FOUND)
+          .send({ message: err.message });
       }
-      if (err.name === 'CastError') {
-        return res.status(400).send({ message: err.message });
+      if (err instanceof CastError) {
+        return res
+          .status(httpConstants.HTTP_STATUS_BAD_REQUEST)
+          .send({ message: err.message });
       } else {
-        res.status(500).send({ message: err.message });
+        res
+          .status(httpConstants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+          .send({ message: 'Произошла ошибка на сервере' });
       }
     });
 };
