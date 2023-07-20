@@ -30,7 +30,7 @@ const getUserId = (req, res) => {
       if (err.message === 'NotFoundUser') {
         return res.status(404).send({ message: err.message });
       }
-      if (err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         return res.status(400).send({ message: err.message });
       } else {
         res.status(500).send({ message: err.message });
