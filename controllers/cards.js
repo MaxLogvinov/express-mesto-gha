@@ -58,10 +58,10 @@ const deleteCard = (req, res) => {
     });
 };
 
-const likeCard = (req, res) => {
+const toggleLike = (req, res, effect) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
-    { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
+    { [effect]: { likes: req.user._id } },
     { new: true }
   )
     .orFail(new NotFoundError('NotFound'))
@@ -86,32 +86,12 @@ const likeCard = (req, res) => {
     });
 };
 
+const likeCard = (req, res) => {
+  toggleLike(req, res, '$addToSet');
+};
+
 const dislikeCard = (req, res) => {
-  Card.findByIdAndUpdate(
-    req.params.cardId,
-    { $pull: { likes: req.user._id } }, // убрать _id из массива
-    { new: true }
-  )
-    .orFail(new Error('NotFound'))
-    .then((card) => {
-      res.status(httpConstants.HTTP_STATUS_OK).send(card);
-    })
-    .catch((err) => {
-      if (err.message === 'NotFound') {
-        return res
-          .status(httpConstants.HTTP_STATUS_NOT_FOUND)
-          .send({ message: err.message });
-      }
-      if (err instanceof CastError) {
-        return res
-          .status(httpConstants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: err.message });
-      } else {
-        res
-          .status(httpConstants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-          .send({ message: 'Произошла ошибка на сервере' });
-      }
-    });
+  toggleLike(req, res, '$pull');
 };
 
 module.exports = {
