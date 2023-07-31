@@ -1,64 +1,56 @@
 const Card = require('../models/card');
 const NotFoundError = require('../errors/NotFoundError');
+const AuthorizationError = require('../errors/AuthorizationError');
+const BadRequestError = require('../errors/BadRequestError');
 const httpConstants = require('http2').constants;
 const mongoose = require('mongoose');
 const { ValidationError, CastError } = mongoose.Error;
 
-const createCard = (req, res) => {
+const createCard = (req, res, next) => {
   const { name, link } = req.body;
-  const owner = req.user._id;
-  Card.create({ name, link, owner })
+  Card.create({ name, link, owner: req.user._id })
     .then((card) =>
       res.status(httpConstants.HTTP_STATUS_CREATED).send({ card })
     )
     .catch((err) => {
       if (err instanceof ValidationError) {
-        return res
-          .status(httpConstants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: err.message });
+        next(new BadRequestError('Некорретные данные'));
       } else {
-        res
-          .status(httpConstants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-          .send({ message: 'Произошла ошибка на сервере' });
+        next(err);
       }
     });
 };
 
-const getCards = (req, res) => {
+const getCards = (req, res, next) => {
   Card.find({})
     .then((cardList) => res.status(httpConstants.HTTP_STATUS_OK).send(cardList))
-    .catch((err) =>
-      res
-        .status(httpConstants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-        .send({ message: 'Произошла ошибка на сервере' })
-    );
+    .catch(next);
 };
 
-const deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
-    .orFail(new NotFoundError('NotFound'))
+const deleteCard = (req, res, next) => {
+  Card.findById(req.params.cardId)
+    .orFail(new NotFoundError('Карточки нет в базе'))
+    .then((card) => {
+      if (card.owner == req.user._id) {
+        return Card.findByIdAndRemove(req.params.cardId);
+      }
+      if (card.owner !== req.user._id) {
+        throw new AuthorizationError('Недостаточно прав для удаления карточки');
+      }
+    })
     .then((card) => {
       res.status(httpConstants.HTTP_STATUS_OK).send(card);
     })
     .catch((err) => {
-      if (err.message === 'NotFound') {
-        return res
-          .status(httpConstants.HTTP_STATUS_NOT_FOUND)
-          .send({ message: err.message });
-      }
       if (err instanceof CastError) {
-        return res
-          .status(httpConstants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: err.message });
+        next(new BadRequestError('Некорретные данные'));
       } else {
-        res
-          .status(httpConstants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-          .send({ message: 'Произошла ошибка на сервере' });
+        next(err);
       }
     });
 };
 
-const toggleLike = (req, res, effect) => {
+const toggleLike = (req, res, next, effect) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { [effect]: { likes: req.user._id } },
@@ -69,29 +61,20 @@ const toggleLike = (req, res, effect) => {
       res.status(httpConstants.HTTP_STATUS_OK).send(card);
     })
     .catch((err) => {
-      if (err.message === 'NotFound') {
-        return res
-          .status(httpConstants.HTTP_STATUS_NOT_FOUND)
-          .send({ message: err.message });
-      }
       if (err instanceof CastError) {
-        return res
-          .status(httpConstants.HTTP_STATUS_BAD_REQUEST)
-          .send({ message: err.message });
+        return next(new BadRequestError('Некорретные данные карточки'));
       } else {
-        res
-          .status(httpConstants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-          .send({ message: 'Произошла ошибка на сервере' });
+        next(err);
       }
     });
 };
 
-const likeCard = (req, res) => {
-  toggleLike(req, res, '$addToSet');
+const likeCard = (req, res, next) => {
+  toggleLike(req, res, next, '$addToSet');
 };
 
-const dislikeCard = (req, res) => {
-  toggleLike(req, res, '$pull');
+const dislikeCard = (req, res, next) => {
+  toggleLike(req, res, next, '$pull');
 };
 
 module.exports = {
