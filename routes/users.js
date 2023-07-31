@@ -24,9 +24,8 @@ router.patch(
 router.get(
   '/:userId',
   celebrate({
-    body: Joi.object().keys({
-      name: Joi.string().min(2).max(30),
-      about: Joi.string().min(2).max(30),
+    params: Joi.object().keys({
+      userId: Joi.string().length(24).hex().required(),
     }),
   }),
   getUserId

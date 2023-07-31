@@ -5,6 +5,7 @@ class BadRequestError extends Error {
     super(message);
     this.statusCode = httpConstants.HTTP_STATUS_BAD_REQUEST;
     this.name = 'BadRequestError';
+    this.message = 'BadRequest';
   }
 }
 

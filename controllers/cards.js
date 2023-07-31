@@ -1,7 +1,7 @@
 const Card = require('../models/card');
 const NotFoundError = require('../errors/NotFoundError');
-const AuthorizationError = require('../errors/AuthorizationError');
 const BadRequestError = require('../errors/BadRequestError');
+const ForbiddenError = require('../errors/ForbiddenError');
 const httpConstants = require('http2').constants;
 const mongoose = require('mongoose');
 const { ValidationError, CastError } = mongoose.Error;
@@ -35,7 +35,7 @@ const deleteCard = (req, res, next) => {
         return Card.findByIdAndRemove(req.params.cardId);
       }
       if (card.owner !== req.user._id) {
-        throw new AuthorizationError('Недостаточно прав для удаления карточки');
+        throw new ForbiddenError('Недостаточно прав для удаления карточки');
       }
     })
     .then((card) => {
