@@ -5,6 +5,7 @@ class AuthorizationError extends Error {
     super(message);
     this.statusCode = httpConstants.HTTP_STATUS_UNAUTHORIZED;
     this.name = 'AuthorizationError';
+    this.message = 'Ошибка авторизации';
   }
 }
 

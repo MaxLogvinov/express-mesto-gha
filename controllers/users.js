@@ -3,6 +3,7 @@ const User = require('../models/user');
 const NotFoundError = require('../errors/NotFoundError');
 const BadRequestError = require('../errors/BadRequestError');
 const ConflictingRequest = require('../errors/ConflictingRequest');
+const AuthorizationError = require('../errors/AuthorizationError');
 const httpConstants = require('http2').constants;
 const mongoose = require('mongoose');
 const { ValidationError, CastError } = mongoose.Error;
@@ -108,13 +109,7 @@ const login = (req, res, next) => {
       });
       res.send({ message: 'Авторизация успешна!' });
     })
-    .catch((err) => {
-      if (err instanceof ValidationError) {
-        next(new BadRequestError('Некорретные данные'));
-      } else {
-        next(err);
-      }
-    });
+    .catch(next);
 };
 
 const getUserInfo = (req, res, next) => {
