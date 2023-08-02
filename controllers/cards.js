@@ -34,7 +34,7 @@ const deleteCard = (req, res, next) => {
     .orFail(new NotFoundError('Карточки нет в базе'))
     .then((card) => {
       if (card.owner == req.user._id) {
-        return Card.deleteOne(req.params.cardId);
+        return Card.deleteOne(card);
       }
       if (card.owner !== req.user._id) {
         throw new ForbiddenError('Недостаточно прав для удаления карточки');
