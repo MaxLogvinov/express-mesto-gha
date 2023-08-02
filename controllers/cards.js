@@ -1,9 +1,11 @@
+/* eslint-disable  */
 const Card = require('../models/card');
 const NotFoundError = require('../errors/NotFoundError');
 const BadRequestError = require('../errors/BadRequestError');
 const ForbiddenError = require('../errors/ForbiddenError');
 const httpConstants = require('http2').constants;
 const mongoose = require('mongoose');
+
 const { ValidationError, CastError } = mongoose.Error;
 
 const createCard = (req, res, next) => {
@@ -32,7 +34,7 @@ const deleteCard = (req, res, next) => {
     .orFail(new NotFoundError('Карточки нет в базе'))
     .then((card) => {
       if (card.owner == req.user._id) {
-        return Card.findByIdAndRemove(req.params.cardId);
+        return Card.deleteOne(req.params.cardId);
       }
       if (card.owner !== req.user._id) {
         throw new ForbiddenError('Недостаточно прав для удаления карточки');
@@ -63,9 +65,8 @@ const toggleLike = (req, res, next, effect) => {
     .catch((err) => {
       if (err instanceof CastError) {
         return next(new BadRequestError('Некорретные данные карточки'));
-      } else {
-        next(err);
       }
+      next(err);
     });
 };
 

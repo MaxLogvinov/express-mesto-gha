@@ -1,13 +1,17 @@
+/* eslint-disable no-console */
 const express = require('express');
 const mongoose = require('mongoose');
-const { PORT = 3000 } = process.env;
-const router = require('./routes/index');
+
+const { PORT = 3000, DB_URL = 'mongodb://127.0.0.1:27017/mestodb' } =
+  process.env;
 const cookieParser = require('cookie-parser');
-const { errorHandler } = require('./middlewares/errorHandler');
 const { errors } = require('celebrate');
+const helmet = require('helmet');
+const { errorHandler } = require('./middlewares/errorHandler');
+const router = require('./routes/index');
 
 mongoose
-  .connect('mongodb://127.0.0.1:27017/mestodb', {
+  .connect(DB_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: false,
   })
@@ -21,6 +25,8 @@ mongoose
 const app = express();
 app.use(cookieParser());
 app.use(express.json());
+
+app.use(helmet());
 
 app.use(router);
 

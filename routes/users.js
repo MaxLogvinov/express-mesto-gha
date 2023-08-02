@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const { celebrate, Joi } = require('celebrate');
 const {
   getUsers,
   getUserId,
@@ -6,7 +7,6 @@ const {
   updateUserAvatar,
   getUserInfo,
 } = require('../controllers/users');
-const { celebrate, Joi } = require('celebrate');
 const regex = require('../utils/regex');
 
 router.get('/', getUsers);

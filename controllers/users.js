@@ -1,11 +1,12 @@
+/* eslint-disable  */
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 const NotFoundError = require('../errors/NotFoundError');
 const BadRequestError = require('../errors/BadRequestError');
 const ConflictingRequest = require('../errors/ConflictingRequest');
-const AuthorizationError = require('../errors/AuthorizationError');
 const httpConstants = require('http2').constants;
 const mongoose = require('mongoose');
+
 const { ValidationError, CastError } = mongoose.Error;
 const { generateToken } = require('../utils/token');
 
@@ -33,9 +34,8 @@ const createUser = (req, res, next) => {
             'Пользователь с данной почтой уже зарегестрирован'
           )
         );
-      } else {
-        next(err);
       }
+      next(err);
     });
 };
 

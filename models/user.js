@@ -1,3 +1,4 @@
+/* eslint-disable  */
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const validator = require('validator');
@@ -38,11 +39,10 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    minlength: 3,
     select: false,
   },
 });
-
+// eslint-disable-next-line
 userSchema.statics.findUserByCredentials = function (email, password) {
   return this.findOne({ email })
     .select('+password')

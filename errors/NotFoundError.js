@@ -1,4 +1,5 @@
 const httpConstants = require('http2').constants;
+
 class NotFoundError extends Error {
   constructor(message) {
     super(message);
